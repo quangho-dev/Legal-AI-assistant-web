@@ -1,13 +1,14 @@
-import Image from "next/image";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-export default async function Home() {
+import { ChatPageClient } from "@/components/chat/chat-page";
+
+export default async function ChatPage() {
   const { userId } = await auth();
 
-  if (userId) {
-    redirect("/chat");
-  } else {
+  if (!userId) {
     redirect("/sign-in");
   }
+
+  return <ChatPageClient />;
 }
