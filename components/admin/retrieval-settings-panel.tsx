@@ -124,7 +124,9 @@ export function RetrievalSettingsPanel() {
   }
 
   const showHybridWeights =
-    form.rag_strategy === "hybrid" || form.rag_strategy === "multi-query-hybrid";
+    form.rag_strategy === "hybrid" ||
+    form.rag_strategy === "multi-query-hybrid" ||
+    form.rag_strategy === "corrective-rag";
 
   if (isLoading) {
     return (
