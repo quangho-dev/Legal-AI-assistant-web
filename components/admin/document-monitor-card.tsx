@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -8,12 +8,14 @@ import {
   FileText,
   Globe,
   Loader2,
+  Pencil,
   Trash2,
 } from "lucide-react";
 
 import { ProcessingPipeline } from "@/components/admin/processing-pipeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import {
   getElementsSummary,
@@ -31,7 +33,9 @@ import { cn } from "@/lib/utils";
 type DocumentMonitorCardProps = {
   document: DocumentMonitorRecord;
   onDelete?: (documentId: string) => void;
+  onRename?: (documentId: string, filename: string) => Promise<void>;
   isDeleting?: boolean;
+  isRenaming?: boolean;
 };
 
 function statusVariant(
@@ -43,15 +47,35 @@ function statusVariant(
   return "outline";
 }
 
+function getEditableName(filename: string, sourceType?: string): string {
+  if (sourceType === "url") {
+    return filename;
+  }
+
+  const lastDot = filename.lastIndexOf(".");
+  if (lastDot <= 0) return filename;
+  return filename.slice(0, lastDot);
+}
+
 export function DocumentMonitorCard({
   document,
   onDelete,
+  onRename,
   isDeleting = false,
+  isRenaming = false,
 }: DocumentMonitorCardProps) {
   const [expanded, setExpanded] = useState(
     isActiveProcessingStatus(document.processing_status)
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(document.filename);
+
+  useEffect(() => {
+    if (!isEditingName) {
+      setNameInput(getEditableName(document.filename, document.source_type));
+    }
+  }, [document.filename, document.source_type, isEditingName]);
 
   const progress = getPipelineProgress(
     document.processing_status,
@@ -62,6 +86,27 @@ export function DocumentMonitorCard({
   const summarisingProgress = getSummarisingProgress(document.processing_details);
   const uploadedMessage = getUploadedMessage(document.processing_details);
   const currentStep = getCurrentPipelineStep(document.processing_status);
+
+  function startEditingName() {
+    setNameInput(getEditableName(document.filename, document.source_type));
+    setIsEditingName(true);
+    setConfirmDelete(false);
+  }
+
+  function cancelEditingName() {
+    setIsEditingName(false);
+    setNameInput(getEditableName(document.filename, document.source_type));
+  }
+
+  async function saveName() {
+    if (!onRename) return;
+
+    const trimmed = nameInput.trim();
+    if (!trimmed) return;
+
+    await onRename(document.id, trimmed);
+    setIsEditingName(false);
+  }
 
   return (
     <div className="rounded-xl border bg-card p-4 shadow-sm">
@@ -75,7 +120,51 @@ export function DocumentMonitorCard({
             )}
           </div>
           <div className="min-w-0 space-y-1">
-            <p className="truncate text-sm font-medium">{document.filename}</p>
+            {isEditingName ? (
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Input
+                  value={nameInput}
+                  onChange={(event) => setNameInput(event.target.value)}
+                  className="h-8 text-sm"
+                  disabled={isRenaming}
+                  autoFocus
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void saveName();
+                    }
+                    if (event.key === "Escape") {
+                      cancelEditingName();
+                    }
+                  }}
+                />
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    disabled={isRenaming || !nameInput.trim()}
+                    onClick={() => void saveName()}
+                  >
+                    {isRenaming ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      "Lưu"
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    disabled={isRenaming}
+                    onClick={cancelEditingName}
+                  >
+                    Hủy
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="truncate text-sm font-medium">{document.filename}</p>
+            )}
             <p className="text-xs text-muted-foreground">
               {new Date(document.created_at).toLocaleString("vi-VN")}
               {document.task_id ? ` · Task ${document.task_id.slice(0, 8)}…` : ""}
@@ -87,6 +176,19 @@ export function DocumentMonitorCard({
           <Badge variant={statusVariant(document.processing_status)}>
             {getProcessingStatusLabel(document.processing_status)}
           </Badge>
+
+          {onRename && !isEditingName && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 text-muted-foreground hover:text-foreground"
+              disabled={isDeleting || isRenaming}
+              onClick={startEditingName}
+              title="Đổi tên tài liệu"
+            >
+              <Pencil className="size-4" />
+            </Button>
+          )}
 
           {onDelete &&
             (confirmDelete ? (
@@ -133,7 +235,7 @@ export function DocumentMonitorCard({
         <div className="space-y-2">
           <div className="flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <span className="text-muted-foreground">Tiến trình embedding</span>
+              <span className="text-muted-foreground">Tiến trình xử lý</span>
               <p className="mt-0.5 text-sm font-medium text-foreground">
                 Bước hiện tại: {currentStep.label}
               </p>
@@ -148,11 +250,11 @@ export function DocumentMonitorCard({
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <StatPill
             icon={<Database className="size-3.5" />}
-            label="Chunks DB"
+            label="Đoạn đã lưu"
             value={String(document.chunk_count)}
           />
           {totalChunks !== null && (
-            <StatPill label="Tổng chunks" value={String(totalChunks)} />
+            <StatPill label="Tổng đoạn" value={String(totalChunks)} />
           )}
           {summarisingProgress && (
             <StatPill
@@ -210,20 +312,19 @@ export function DocumentMonitorCard({
 
             {totalChunks !== null && (
               <DetailBlock title="Chia đoạn">
-                <DetailRow label="Tổng chunks" value={totalChunks} />
+                <DetailRow label="Tổng đoạn" value={totalChunks} />
               </DetailBlock>
             )}
 
             {document.chunk_count > 0 && (
-              <DetailBlock title="Lưu trữ database">
+              <DetailBlock title="Đã lưu cho trợ lý">
                 <DetailRow
-                  label="Chunks đã lưu"
+                  label="Đoạn đã lưu"
                   value={document.chunk_count}
                   highlight
                 />
                 <p className="text-muted-foreground">
-                  Embeddings vector 1536 chiều đã được lưu vào bảng{" "}
-                  <code className="rounded bg-muted px-1">document_chunks</code>.
+                  Tài liệu đã sẵn sàng để trợ lý tra cứu khi trả lời câu hỏi.
                 </p>
               </DetailBlock>
             )}
@@ -233,7 +334,7 @@ export function DocumentMonitorCard({
               document.chunk_count === 0 &&
               document.processing_status !== "completed" && (
                 <p className="text-muted-foreground">
-                  Đang chờ dữ liệu xử lý từ worker...
+                  Đang chờ hệ thống xử lý tài liệu...
                 </p>
               )}
 
@@ -245,8 +346,8 @@ export function DocumentMonitorCard({
                 )}
               >
                 {document.chunk_count > 0
-                  ? `Hoàn tất: ${document.chunk_count} chunks đã được embedding và lưu vào database.`
-                  : "Hoàn tất xử lý nhưng chưa có chunks trong database."}
+                  ? `Hoàn tất: ${document.chunk_count} đoạn tài liệu đã sẵn sàng cho trợ lý.`
+                  : "Hoàn tất xử lý nhưng chưa có nội dung nào được lưu."}
               </p>
             )}
           </div>

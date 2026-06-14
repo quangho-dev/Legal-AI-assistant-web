@@ -74,7 +74,7 @@ export function AdminUploadPanel() {
       await uploadFileToS3(uploadData.upload_url, selectedFile);
       await confirmFileUpload(uploadData.s3_key, token);
 
-      toast.success("Tải file thành công. Quá trình embedding đã bắt đầu.");
+      toast.success("Tải file thành công. Tài liệu đang được xử lý.");
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       setMonitorKey((current) => current + 1);
@@ -101,7 +101,7 @@ export function AdminUploadPanel() {
     try {
       const token = await getToken();
       await submitDocumentUrl(trimmedUrl, token);
-      toast.success("URL đã được thêm. Quá trình embedding đã bắt đầu.");
+      toast.success("URL đã được thêm. Tài liệu đang được xử lý.");
       setUrlInput("");
       setMonitorKey((current) => current + 1);
     } catch (error) {
@@ -120,8 +120,8 @@ export function AdminUploadPanel() {
           Quản trị tài liệu
         </h1>
         <p className="text-sm text-muted-foreground">
-          Tải file hoặc thêm URL để bắt đầu quá trình embedding cho hệ thống
-          RAG.
+          Tải file hoặc thêm URL để trợ lý có thể đọc và trả lời dựa trên nội
+          dung đó.
         </p>
       </div>
 
@@ -136,8 +136,8 @@ export function AdminUploadPanel() {
             <CardHeader>
               <CardTitle>Tải tài liệu pháp lý</CardTitle>
               <CardDescription>
-                Hỗ trợ PDF, DOC, DOCX, TXT, HTML. File sẽ được lưu trữ và xử
-                lý embedding tự động.
+                Hỗ trợ PDF, DOC, DOCX, TXT, HTML. Tài liệu sẽ được lưu trữ và xử
+                lý tự động để trợ lý sử dụng.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -168,7 +168,7 @@ export function AdminUploadPanel() {
                 ) : (
                   <Upload className="size-4" />
                 )}
-                {isUploadingFile ? "Đang tải lên..." : "Bắt đầu embedding"}
+                {isUploadingFile ? "Đang tải lên..." : "Tải lên và xử lý"}
               </Button>
             </CardContent>
           </Card>
@@ -179,8 +179,7 @@ export function AdminUploadPanel() {
             <CardHeader>
               <CardTitle>Thêm nguồn từ URL</CardTitle>
               <CardDescription>
-                Nhập liên kết trang web pháp lý để thu thập nội dung và tạo
-                embedding.
+                Nhập liên kết trang web pháp lý để thu thập nội dung cho trợ lý.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -206,7 +205,7 @@ export function AdminUploadPanel() {
                   ) : (
                     <Link2 className="size-4" />
                   )}
-                  {isSubmittingUrl ? "Đang xử lý..." : "Bắt đầu embedding"}
+                  {isSubmittingUrl ? "Đang xử lý..." : "Thêm và xử lý"}
                 </Button>
               </form>
             </CardContent>
@@ -217,8 +216,8 @@ export function AdminUploadPanel() {
       <DocumentMonitorDashboard
         key={monitorKey}
         showHeader={false}
-        title="Theo dõi embedding"
-        description="Giám sát quá trình phân tích, embedding và lưu trữ tài liệu."
+        title="Theo dõi xử lý tài liệu"
+        description="Giám sát tiến trình phân tích và chuẩn bị tài liệu cho trợ lý."
       />
     </div>
   );

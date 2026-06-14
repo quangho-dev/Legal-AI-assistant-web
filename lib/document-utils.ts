@@ -6,13 +6,13 @@ import type {
 const STATUS_LABELS: Record<string, string> = {
   uploading: "Đang tải lên",
   pending: "Chờ xử lý",
-  uploaded: "Tải lên S3 thành công",
+  uploaded: "Tải lên thành công",
   queued: "Đang chờ hàng đợi",
   processing: "Đang xử lý",
   partitioning: "Đang phân tích nội dung",
   chunking: "Đang chia đoạn",
   summarising: "Đang tóm tắt AI",
-  vectorization: "Đang tạo embedding",
+  vectorization: "Đang chuẩn bị tra cứu",
   completed: "Hoàn thành",
 };
 
@@ -20,14 +20,14 @@ export const PIPELINE_STEPS = [
   { key: "pending", label: "Chờ xử lý", description: "Tài liệu đã được tạo" },
   {
     key: "uploaded",
-    label: "Tải S3 thành công",
-    description: "File đã lưu trên S3",
+    label: "Tải lên thành công",
+    description: "File đã được lưu trữ",
   },
-  { key: "queued", label: "Hàng đợi", description: "Chờ worker xử lý" },
+  { key: "queued", label: "Hàng đợi", description: "Chờ đến lượt xử lý" },
   {
     key: "processing",
     label: "Bắt đầu xử lý",
-    description: "Worker nhận tác vụ",
+    description: "Hệ thống bắt đầu đọc tài liệu",
   },
   {
     key: "partitioning",
@@ -37,22 +37,22 @@ export const PIPELINE_STEPS = [
   {
     key: "chunking",
     label: "Chia đoạn",
-    description: "Tách thành các chunks",
+    description: "Tách thành các phần nhỏ để tra cứu",
   },
   {
     key: "summarising",
     label: "Tóm tắt AI",
-    description: "Tạo nội dung tìm kiếm",
+    description: "Tạo nội dung hỗ trợ tìm kiếm",
   },
   {
     key: "vectorization",
-    label: "Tạo embedding",
-    description: "Vector hóa từng chunk",
+    label: "Chuẩn bị tra cứu",
+    description: "Hoàn thiện dữ liệu cho trợ lý",
   },
   {
     key: "completed",
     label: "Hoàn thành",
-    description: "Đã lưu vào database",
+    description: "Sẵn sàng cho trợ lý sử dụng",
   },
 ] as const;
 

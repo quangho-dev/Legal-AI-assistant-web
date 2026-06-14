@@ -1,8 +1,7 @@
 import type {
-  ChatSession,
-  SendChatMessageRequest,
-  SendChatMessageResponse,
-} from "@/lib/types/chat";
+  RetrievalSettings,
+  RetrievalSettingsInput,
+} from "@/lib/types/retrieval-settings";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8003";
 
@@ -36,10 +35,10 @@ async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
   }
 }
 
-export async function listChats(
+export async function getRetrievalSettings(
   token?: string | null
-): Promise<ChatSession[]> {
-  const response = await apiFetch(`${API_URL}/api/chats`, {
+): Promise<RetrievalSettings | null> {
+  const response = await apiFetch(`${API_URL}/api/retrieval-settings`, {
     headers: authHeaders(token),
   });
 
@@ -48,14 +47,14 @@ export async function listChats(
   }
 
   const body = await response.json();
-  return body.data ?? [];
+  return body.data ?? null;
 }
 
-export async function createChat(
-  payload: { title?: string; id?: string },
+export async function createRetrievalSettings(
+  payload: RetrievalSettingsInput,
   token?: string | null
-): Promise<ChatSession> {
-  const response = await apiFetch(`${API_URL}/api/chats`, {
+): Promise<RetrievalSettings> {
+  const response = await apiFetch(`${API_URL}/api/retrieval-settings`, {
     method: "POST",
     headers: authHeaders(token),
     body: JSON.stringify(payload),
@@ -69,12 +68,12 @@ export async function createChat(
   return body.data;
 }
 
-export async function sendChatMessage(
-  payload: SendChatMessageRequest,
+export async function updateRetrievalSettings(
+  payload: RetrievalSettingsInput,
   token?: string | null
-): Promise<SendChatMessageResponse> {
-  const response = await apiFetch(`${API_URL}/api/chat`, {
-    method: "POST",
+): Promise<RetrievalSettings> {
+  const response = await apiFetch(`${API_URL}/api/retrieval-settings`, {
+    method: "PUT",
     headers: authHeaders(token),
     body: JSON.stringify(payload),
   });

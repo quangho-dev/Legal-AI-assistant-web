@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "react-hot-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin", "vietnamese"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin", "vietnamese"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -29,16 +31,16 @@ export default function RootLayout({
     <ClerkProvider afterSignOutUrl={"/sign-in"}>
       <html lang="vi" className="dark">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} min-h-svh bg-background text-foreground antialiased`}
+          className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} min-h-svh bg-background font-sans text-foreground antialiased`}
         >
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster
             position="top-center"
             toastOptions={{
               style: {
-                background: "oklch(0.17 0.032 255)",
-                color: "oklch(0.94 0.015 255)",
-                border: "1px solid oklch(0.32 0.04 255 / 45%)",
+                background: "oklch(0.15 0.045 222)",
+                color: "oklch(0.93 0.022 220)",
+                border: "1px solid oklch(0.30 0.058 215 / 42%)",
               },
             }}
           />

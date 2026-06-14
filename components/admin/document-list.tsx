@@ -37,8 +37,8 @@ export function DocumentList({ documents, isLoading }: DocumentListProps) {
   if (documents.length === 0) {
     return (
       <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-        Chưa có tài liệu nào. Tải file hoặc thêm URL để bắt đầu quá trình
-        embedding.
+        Chưa có tài liệu nào. Tải file hoặc thêm URL để trợ lý có thể sử dụng
+        nội dung đó.
       </div>
     );
   }

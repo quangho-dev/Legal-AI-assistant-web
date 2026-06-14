@@ -11,10 +11,10 @@ import {
   LEGAL_STARTER_PROMPTS,
 } from "@/lib/chat-utils";
 import type { ChatMessage, ChatSession } from "@/lib/types/chat";
+import { CitationList } from "@/components/chat/citation-list";
+import { MarkdownMessage } from "@/components/chat/markdown-message";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
@@ -48,22 +48,20 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 
       <div
         className={cn(
-          "max-w-[85%] space-y-2 rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[75%]",
+          "min-w-0 max-w-[85%] space-y-2 rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[75%]",
           isUser
             ? "bg-primary text-primary-foreground"
             : "border bg-card text-card-foreground"
         )}
       >
-        <p className="whitespace-pre-wrap">{message.content}</p>
+        {isUser ? (
+          <p className="whitespace-pre-wrap">{message.content}</p>
+        ) : (
+          <MarkdownMessage content={message.content} />
+        )}
 
         {!isUser && message.citations && message.citations.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            {message.citations.map((citation, index) => (
-              <Badge key={`${message.id}-citation-${index}`} variant="secondary">
-                {citation.filename ?? `Nguồn ${index + 1}`}
-              </Badge>
-            ))}
-          </div>
+          <CitationList citations={message.citations} />
         )}
       </div>
 
@@ -98,10 +96,18 @@ export function ChatPanel({ chat, onUpdateChat }: ChatPanelProps) {
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const prevMessageCountRef = useRef(chat.messages.length);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chat.messages, isLoading]);
+    const messageCountIncreased =
+      chat.messages.length > prevMessageCountRef.current;
+
+    if (messageCountIncreased || isLoading) {
+      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+
+    prevMessageCountRef.current = chat.messages.length;
+  }, [chat.messages.length, isLoading]);
 
   async function handleSendMessage(messageText: string) {
     const trimmed = messageText.trim();
@@ -178,8 +184,8 @@ export function ChatPanel({ chat, onUpdateChat }: ChatPanelProps) {
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col">
-        <ScrollArea className="flex-1 px-4 py-6">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
           {chat.messages.length === 0 ? (
             <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 pt-16 text-center">
               <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -190,8 +196,7 @@ export function ChatPanel({ chat, onUpdateChat }: ChatPanelProps) {
                   Trợ lý nghiên cứu pháp lý
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Nhận câu trả lời dựa trên tài liệu pháp lý đã tải lên của bạn
-                  bằng công nghệ RAG (tạo sinh tăng cường truy xuất).
+                  Hỏi đáp dựa trên tài liệu pháp lý bạn đã thêm vào hệ thống.
                 </p>
               </div>
               <div className="grid w-full gap-2 sm:grid-cols-2">
@@ -217,9 +222,9 @@ export function ChatPanel({ chat, onUpdateChat }: ChatPanelProps) {
               <div ref={scrollRef} />
             </div>
           )}
-        </ScrollArea>
+        </div>
 
-        <div className="border-t bg-background/80 p-4 backdrop-blur-sm">
+        <div className="shrink-0 border-t bg-background/80 p-4 backdrop-blur-sm">
           <form
             onSubmit={handleSubmit}
             className="mx-auto flex max-w-3xl items-end gap-2"

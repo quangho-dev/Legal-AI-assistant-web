@@ -3,8 +3,9 @@ import type {
   DocumentRecord,
   UploadUrlResponse,
 } from "@/lib/types/documents";
+import type { DocumentContent, ChunkContent } from "@/lib/types/chat";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8002";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8003";
 
 function authHeaders(token?: string | null): HeadersInit {
   return {
@@ -143,6 +144,58 @@ export async function deleteDocument(
 ): Promise<DocumentRecord> {
   const response = await apiFetch(`${API_URL}/api/files/${documentId}`, {
     method: "DELETE",
+    headers: authHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseError(response));
+  }
+
+  const body = await response.json();
+  return body.data;
+}
+
+export async function renameDocument(
+  documentId: string,
+  filename: string,
+  token?: string | null
+): Promise<DocumentRecord> {
+  const response = await apiFetch(`${API_URL}/api/files/${documentId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify({ filename }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseError(response));
+  }
+
+  const body = await response.json();
+  return body.data;
+}
+
+export async function getDocumentContent(
+  documentId: string,
+  token?: string | null
+): Promise<DocumentContent> {
+  const response = await apiFetch(
+    `${API_URL}/api/documents/${documentId}/content`,
+    { headers: authHeaders(token) }
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseError(response));
+  }
+
+  const body = await response.json();
+  return body.data;
+}
+
+export async function getChunkContent(
+  chunkId: string,
+  token?: string | null
+): Promise<ChunkContent> {
+  const response = await apiFetch(`${API_URL}/api/chunks/${chunkId}`, {
     headers: authHeaders(token),
   });
 

@@ -9,6 +9,7 @@ import {
   FileText,
   Upload,
   Activity,
+  Settings2,
 } from "lucide-react";
 
 import type { ChatSession } from "@/lib/types/chat";
@@ -58,7 +59,7 @@ export function AppSidebar({
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">AI Pháp lý</span>
                   <span className="truncate text-xs text-sidebar-foreground/70">
-                    Trợ lý RAG
+                    Trợ lý pháp lý
                   </span>
                 </div>
               </Link>
@@ -131,10 +132,18 @@ export function AppSidebar({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Theo dõi embedding">
+                    <SidebarMenuButton asChild tooltip="Theo dõi xử lý tài liệu">
                       <Link href="/admin/monitor">
                         <Activity />
-                        <span>Theo dõi embedding</span>
+                        <span>Theo dõi xử lý tài liệu</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild tooltip="Cài đặt trò chuyện">
+                      <Link href="/admin/retrieval-settings">
+                        <Settings2 />
+                        <span>Cài đặt trò chuyện</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

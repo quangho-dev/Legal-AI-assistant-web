@@ -21,7 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { deleteDocument, listDocumentsMonitor } from "@/lib/api/documents";
+import { deleteDocument, listDocumentsMonitor, renameDocument } from "@/lib/api/documents";
 import { isActiveProcessingStatus } from "@/lib/document-utils";
 import type { DocumentMonitorRecord } from "@/lib/types/documents";
 
@@ -32,8 +32,8 @@ type DocumentMonitorDashboardProps = {
 };
 
 export function DocumentMonitorDashboard({
-  title = "Theo dõi embedding",
-  description = "Giám sát realtime quá trình phân tích, embedding và lưu trữ tài liệu vào database.",
+  title = "Theo dõi xử lý tài liệu",
+  description = "Giám sát tiến trình phân tích và chuẩn bị tài liệu cho trợ lý.",
   showHeader = true,
 }: DocumentMonitorDashboardProps) {
   const { getToken } = useAuth();
@@ -42,6 +42,7 @@ export function DocumentMonitorDashboard({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
 
   const loadDocuments = useCallback(
     async (silent = false) => {
@@ -84,6 +85,34 @@ export function DocumentMonitorDashboard({
         );
       } finally {
         setDeletingId(null);
+      }
+    },
+    [getToken]
+  );
+
+  const handleRenameDocument = useCallback(
+    async (documentId: string, filename: string) => {
+      setRenamingId(documentId);
+
+      try {
+        const token = await getToken();
+        const updated = await renameDocument(documentId, filename, token);
+        setDocuments((current) =>
+          current.map((document) =>
+            document.id === documentId
+              ? { ...document, filename: updated.filename }
+              : document
+          )
+        );
+        setLastUpdated(new Date());
+        toast.success("Đã đổi tên tài liệu");
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Không thể đổi tên tài liệu"
+        );
+        throw error;
+      } finally {
+        setRenamingId(null);
       }
     },
     [getToken]
@@ -165,18 +194,18 @@ export function DocumentMonitorDashboard({
           value={stats.total}
         />
         <SummaryCard
-          icon={<Loader2 className="size-4 text-amber-400" />}
+          icon={<Loader2 className="size-4 text-chart-4" />}
           label="Đang xử lý"
           value={stats.processing}
         />
         <SummaryCard
-          icon={<CheckCircle2 className="size-4 text-emerald-400" />}
+          icon={<CheckCircle2 className="size-4 text-chart-1" />}
           label="Hoàn thành"
           value={stats.completed}
         />
         <SummaryCard
-          icon={<Clock3 className="size-4 text-sky-400" />}
-          label="Chunks trong DB"
+          icon={<Clock3 className="size-4 text-chart-2" />}
+          label="Đoạn đã lưu"
           value={stats.storedChunks}
         />
       </div>
@@ -185,8 +214,8 @@ export function DocumentMonitorDashboard({
         <CardHeader>
           <CardTitle>Tiến trình từng tài liệu</CardTitle>
           <CardDescription>
-            Pipeline: chờ → S3 → hàng đợi → phân tích → chia đoạn → tóm tắt →
-            embedding → lưu database
+            Theo dõi từng bước: tải lên → phân tích → chia đoạn → tóm tắt →
+            sẵn sàng tra cứu
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -207,7 +236,9 @@ export function DocumentMonitorDashboard({
                   key={document.id}
                   document={document}
                   onDelete={handleDeleteDocument}
+                  onRename={handleRenameDocument}
                   isDeleting={deletingId === document.id}
+                  isRenaming={renamingId === document.id}
                 />
               ))}
             </div>

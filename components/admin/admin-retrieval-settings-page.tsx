@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { ArrowLeft, Scale } from "lucide-react";
 
-import { DocumentMonitorDashboard } from "@/components/admin/document-monitor-dashboard";
+import { RetrievalSettingsPanel } from "@/components/admin/retrieval-settings-panel";
 import { Button } from "@/components/ui/button";
 
-export function AdminMonitorPageClient() {
+export function AdminRetrievalSettingsPageClient() {
   return (
     <div className="min-h-svh bg-background">
       <header className="flex h-14 items-center gap-3 border-b px-4">
@@ -17,12 +17,12 @@ export function AdminMonitorPageClient() {
         </Button>
         <div className="flex items-center gap-2 text-sm font-medium">
           <Scale className="size-4 text-primary" />
-          AI Pháp lý · Theo dõi xử lý tài liệu
+          AI Pháp lý · Cài đặt trò chuyện
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl p-6">
-        <DocumentMonitorDashboard />
+      <div className="mx-auto max-w-3xl p-6">
+        <RetrievalSettingsPanel />
       </div>
     </div>
   );

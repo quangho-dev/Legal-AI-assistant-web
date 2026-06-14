@@ -1,4 +1,4 @@
-import type { ChatSession } from "@/lib/types/chat";
+import type { ChatSession, Citation } from "@/lib/types/chat";
 
 export function createChatSession(title = "Cuộc trò chuyện mới"): ChatSession {
   const now = new Date().toISOString();
@@ -24,3 +24,15 @@ export const LEGAL_STARTER_PROMPTS = [
   "Quy trình pháp lý khi chấm dứt hợp đồng lao động là gì?",
   "Quyền bảo mật giữa luật sư và khách hàng hoạt động như thế nào?",
 ];
+
+export function formatLawDisplayName(citation: Citation): string {
+  if (citation.lawName?.trim()) {
+    return citation.lawName.trim();
+  }
+
+  return "Văn bản pháp luật";
+}
+
+export function displayCitationValue(value?: string): string {
+  return value?.trim() || "—";
+}
