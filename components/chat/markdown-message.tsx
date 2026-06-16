@@ -1,16 +1,39 @@
 "use client";
 
+import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { cn } from "@/lib/utils";
 
+function flattenChildren(children: ReactNode): string {
+  if (children == null || typeof children === "boolean") return "";
+  if (typeof children === "string" || typeof children === "number") {
+    return String(children);
+  }
+  if (Array.isArray(children)) {
+    return children.map(flattenChildren).join("");
+  }
+  if (typeof children === "object" && "props" in children) {
+    const element = children as { props?: { children?: ReactNode } };
+    return flattenChildren(element.props?.children);
+  }
+  return "";
+}
+
 type MarkdownMessageProps = {
   content: string;
   className?: string;
+  variant?: "default" | "compare-report";
 };
 
-export function MarkdownMessage({ content, className }: MarkdownMessageProps) {
+export function MarkdownMessage({
+  content,
+  className,
+  variant = "default",
+}: MarkdownMessageProps) {
+  const isCompareReport = variant === "compare-report";
+
   return (
     <div className={cn("markdown-message", className)}>
       <ReactMarkdown
@@ -22,15 +45,34 @@ export function MarkdownMessage({ content, className }: MarkdownMessageProps) {
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="mb-2 mt-4 text-sm font-semibold first:mt-0">
+            <h2
+              className={cn(
+                "mb-2 mt-4 text-sm font-semibold first:mt-0",
+                isCompareReport &&
+                  "border-b border-primary/20 pb-2 text-base tracking-tight"
+              )}
+            >
               {children}
             </h2>
           ),
-          h3: ({ children }) => (
-            <h3 className="mb-2 mt-3 text-sm font-medium first:mt-0">
-              {children}
-            </h3>
-          ),
+          h3: ({ children }) => {
+            const text = flattenChildren(children);
+            const isTopicHeading =
+              isCompareReport && /^Chủ đề\s+\d+:/i.test(text);
+
+            return (
+              <h3
+                className={cn(
+                  "mb-2 mt-3 text-sm font-medium first:mt-0",
+                  isCompareReport &&
+                    "mt-6 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-sm font-semibold text-foreground first:mt-0",
+                  isTopicHeading && "border-l-4 border-l-primary pl-3"
+                )}
+              >
+                {children}
+              </h3>
+            );
+          },
           p: ({ children }) => (
             <p className="mb-3 leading-relaxed last:mb-0">{children}</p>
           ),
@@ -104,7 +146,14 @@ export function MarkdownMessage({ content, className }: MarkdownMessageProps) {
             <th className="px-2 py-1.5 font-semibold">{children}</th>
           ),
           td: ({ children }) => <td className="px-2 py-1.5">{children}</td>,
-          hr: () => <hr className="my-4 border-border/60" />,
+          hr: () => (
+            <hr
+              className={cn(
+                "my-4 border-border/60",
+                isCompareReport && "my-6 border-t-2 border-dashed border-primary/30"
+              )}
+            />
+          ),
         }}
       >
         {content}

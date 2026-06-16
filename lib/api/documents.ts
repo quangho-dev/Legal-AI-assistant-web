@@ -5,7 +5,7 @@ import type {
 } from "@/lib/types/documents";
 import type { DocumentContent, ChunkContent } from "@/lib/types/chat";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8003";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 function authHeaders(token?: string | null): HeadersInit {
   return {

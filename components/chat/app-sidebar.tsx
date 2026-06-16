@@ -10,6 +10,7 @@ import {
   Upload,
   Activity,
   Settings2,
+  GitCompare,
 } from "lucide-react";
 
 import type { ChatSession } from "@/lib/types/chat";
@@ -118,6 +119,14 @@ export function AppSidebar({
                   <Link href="/chat">
                     <FileText />
                     <span>Trợ lý hỏi đáp</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="So sánh tài liệu">
+                  <Link href="/compare">
+                    <GitCompare />
+                    <span>So sánh tài liệu</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

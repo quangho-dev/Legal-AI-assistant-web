@@ -142,6 +142,12 @@ export function getSummarisingProgress(
   return summarising;
 }
 
+export function getEditableDocumentName(filename: string): string {
+  const lastDot = filename.lastIndexOf(".");
+  if (lastDot <= 0) return filename;
+  return filename.slice(0, lastDot);
+}
+
 export const ACCEPTED_FILE_TYPES = [
   ".pdf",
   ".doc",
